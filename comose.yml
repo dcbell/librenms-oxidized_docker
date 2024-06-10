@@ -1,0 +1,160 @@
+services:
+  db:
+    image: mariadb:10
+    container_name: librenms_db
+    command:
+      - "mysqld"
+      - "--innodb-file-per-table=1"
+      - "--lower-case-table-names=0"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - "TZ=${TZ}"
+      - "MARIADB_RANDOM_ROOT_PASSWORD=yes"
+      - "MYSQL_DATABASE=${MYSQL_DATABASE}"
+      - "MYSQL_USER=${MYSQL_USER}"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+    restart: always
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: librenms_redis
+    environment:
+      - "TZ=${TZ}"
+    restart: always
+
+  msmtpd:
+    image: crazymax/msmtpd:latest
+    container_name: librenms_msmtpd
+    env_file:
+      - "stack.env"
+    restart: always
+
+  librenms:
+    image: librenms/librenms:latest
+    container_name: librenms
+    hostname: librenms
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - 3300:8000
+    depends_on:
+      - db
+      - redis
+      - msmtpd
+    volumes:
+      - app-data:/data
+    env_file:
+      - "stack.env"
+    environment:
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "DB_HOST=db"
+      - "DB_NAME=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+      - "DB_TIMEOUT=60"
+    restart: always
+
+  dispatcher:
+    image: librenms/librenms:latest
+    container_name: librenms_dispatcher
+    hostname: librenms-dispatcher
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - librenms
+      - redis
+    volumes:
+      - app-data:/data
+    env_file:
+      - "stack.env"
+    environment:
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "DB_HOST=db"
+      - "DB_NAME=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+      - "DB_TIMEOUT=60"
+      - "DISPATCHER_NODE_ID=dispatcher1"
+      - "SIDECAR_DISPATCHER=1"
+    restart: always
+
+  syslogng:
+    image: librenms/librenms:latest
+    container_name: librenms_syslogng
+    hostname: librenms-syslogng
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - librenms
+      - redis
+    ports:
+      - 3301:514/tcp
+      - 3301:514/udp
+    volumes:
+      - app-data:/data
+    env_file:
+      - "stack.env"
+    environment:
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "DB_HOST=db"
+      - "DB_NAME=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+      - "DB_TIMEOUT=60"
+      - "SIDECAR_SYSLOGNG=1"
+    restart: always
+
+  snmptrapd:
+    image: librenms/librenms:latest
+    container_name: librenms_snmptrapd
+    hostname: librenms-snmptrapd
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    depends_on:
+      - librenms
+      - redis
+    ports:
+      - 3302:162/tcp
+      - 3302:162/udp
+    volumes:
+      - app-data:/data
+    env_file:
+      - "stack.env"
+    environment:
+      - "TZ=${TZ}"
+      - "PUID=${PUID}"
+      - "PGID=${PGID}"
+      - "DB_HOST=db"
+      - "DB_NAME=${MYSQL_DATABASE}"
+      - "DB_USER=${MYSQL_USER}"
+      - "DB_PASSWORD=${MYSQL_PASSWORD}"
+      - "DB_TIMEOUT=60"
+      - "SIDECAR_SNMPTRAPD=1"
+    restart: always
+
+  oxidized:
+    image: oxidized/oxidized:latest
+    container_name: librenms_oxidized
+    environment:
+      CONFIG_RELOAD_INTERVAL: 600
+    volumes:
+       - oxidized-config:/home/oxidized/.config/oxidized/
+    restart: always
+
+volumes:
+  db-data:
+  app-data:
+  oxidized-config:
