@@ -14,4 +14,4 @@ This is a basic guide to setting up a LibreNMS instance with Oxidized all inside
 ### Portainer Stack
 1. Login to Portainer and connect to local, assuming you didn't setup another environment.
 2. Go into `Stacks` and click `+ Add stack`
-3. Paste in the custom compose file.
+3. Paste in the [custom compose file](compose.yml).
