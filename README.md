@@ -27,7 +27,7 @@ For Oxidized, the config is changed to use git to store configs locally and to a
 1. Login to Portainer and connect to the local environment, assuming you didn't setup another environment.
 2. Go into `Stacks` and click `+ Add stack`
 3. Paste the [custom compose file](compose.yml) into the web editor.
-5. Click `Load variables from .env file` at the bottom. You will need to do this step three times to load each of the 3 .env files you downloaded in the Prep step above.
+5. Click `Load variables from .env file` at the bottom. You will need to do this step three times to load each of the 3 .env files you downloaded in the [Prep](#prep) step above.
 6. Modify the variables as needed. The primary ones you will probably need to update are `LIBRENMS_SNMP_COMMUNITY` and all the `SMTP` values. Go ahead and set a good `MYSQL_PASSWORD` while you are at it.
 7. Click `Deploy the stack`
 
