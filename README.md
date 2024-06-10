@@ -9,7 +9,7 @@ This writeup includes the compose and config files I used, as well as various in
 ## What is different?
 There are a couple of main things I changed from the official compose example.
 * Since we are using Portainer, you need to use `stack.env` to reference your .env files. If you are curious about this part, you can read more [here](https://www.portainer.io/blog/using-env-files-in-stacks-with-portainer).
-* I used named volumes for each access to the various configs/files.
+* I used named volumes for easy access to the various configs/files.
 * Most importantly for this writeup, I added the oxidized container into the stack.
 
 For Oxidized, the config is changed to use git to store configs locally and to access the librenms container using its containername in the URL.
