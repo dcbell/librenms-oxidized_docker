@@ -4,18 +4,16 @@ Simple Portainer/Docker setup for LibreNMS + Oxidized
 ## Purpose
 This is a basic guide to setting up a LibreNMS instance with Oxidized all inside a single Portainer Stack. The same basic steps would work with Docker Compose if you make a few modifications. This is built off the [official docker compose example](https://github.com/librenms/docker/tree/master/examples/compose).
 
-This writeup includes the compose and config files I used, as well as various instructions for things you need to do as you move along.
-
 ## What is different?
 There are a couple of main things I changed from the official compose example.
-* Since we are using Portainer, you need to use `stack.env` to reference your .env files. If you are curious about this part, you can read more [here](https://www.portainer.io/blog/using-env-files-in-stacks-with-portainer).
-* I used named volumes for easy access to the various configs/files.
-* Most importantly for this writeup, I added the oxidized container into the stack.
+* Since we are using Portainer, you need to use `stack.env` to reference your .env files.
+* Named volumes for easy access to the various configs/files.
+* Added the oxidized container into the stack.
 
 For Oxidized, the config is changed to use git to store configs locally and to access the librenms container using its containername in the URL.
 
 ## Prerequisite
-1. Host OS with Docker installed. I used Ubuntu 24.02.
+1. Host OS with Docker installed.
 2. Portainer installed. You can find instructions [here](https://docs.portainer.io/start/install-ce/server/docker/linux)
 
 ## Setup
@@ -24,7 +22,7 @@ For Oxidized, the config is changed to use git to store configs locally and to a
 1. Go to the [official docker compose example](https://github.com/librenms/docker/tree/master/examples/compose) and download the 3 env files (`.env`, `librenms.env`, `msmtpd.env`)
 
 ### Portainer Stack
-1. Login to Portainer and connect to the local environment, assuming you didn't setup another environment.
+1. Login to Portainer.
 2. Go into `Stacks` and click `+ Add stack`.
 3. Give it a name.
 4. Paste the [custom compose file](compose.yml) into the web editor.
@@ -41,11 +39,10 @@ For Oxidized, the config is changed to use git to store configs locally and to a
 5. Go to `http://[docker host or IP]:3300/api-access/` and generate a token. Save this for later.
 
 ### Oxidized Setup
-1. In Portainer, stop the `librenms_oxidized` container. There is a config change you will need to make before things will work.
-2. Find the mount point for your oxidized configs. You can find this in Portainer by going to `Volumes` and looking for `librenms_oxidized-config`. The `Mount point` is what you are looking for. In my case it was `/var/lib/docker/volumes/librenms_oxidized-config/_data`.
+1. In Portainer, stop the `librenms_oxidized` container.
+2. Find the mount point for your oxidized configs. You can find this in Portainer by going to `Volumes` and looking for `librenms_oxidized-config`. The `Mount point` is what you are looking for.
 3. SSH (or console) to your docker host.
-4. Edit the oxidized config file: `sudo nano /var/lib/docker/volumes/librenms_oxidized-config/_data/config`
-   - Adjust as needed based on what you found in step 2 above.
+4. Edit the oxidized config file: `sudo nano [mount point path from step 2]`
 5. You can start with this [customized config file](oxidized_config)
    - Make sure to edit the usernames and passwords. There is a default at the top, and in the `models` section there is a template for doing a login for each model type if needed.
    - On the last line, you will need to put the API token you got in the Initial Setup step earlier.
@@ -63,4 +60,4 @@ For Oxidized, the config is changed to use git to store configs locally and to a
 7. Now turn on the top option to `Enable Oxidized Support`.
 
 ## The End
-You can monitor the Oxidized logs from Portainer to make sure it is able to connect to the switches. Once the initial backups complete, you should be able to view them from within the device page.
+You can monitor the Oxidized logs from Portainer to make sure it is able to connect to the devices. Once the initial backups complete, you should be able to view them from within the device page.
